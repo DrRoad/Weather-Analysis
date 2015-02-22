@@ -97,6 +97,7 @@ ggplot(rain[rain$value>0 & year(rain$date) == 2014 , ], aes(x=date, y=value, col
 ############################################################
 
 library(plyr)
+library(lubridate)
 
 temp_avg_monthly <- ddply(weather, .(year(date), month(date) ),  summarise, MaxT = mean(temp_avg_daily))
 names(temp_avg_monthly) <- c("year", "month", "temperature")
@@ -159,13 +160,18 @@ p3 <- ggplot(temp_avg, aes(x=year_month, y=value,colour=july))+geom_boxplot() +
 
  library(gridExtra)
 
-grid.arrange(p1, p3, p2)
 
+
+pdf("Trends in Temperature.pdf")
+grid.arrange(p1, p3, p2)
+dev.off()
 
 rain_avg <- rain[( month(rain$date)> 5 & month(rain$date)<10 ),]
 rain_avg <- rain_avg[rain_avg$value > 0 ,]
 rain_avg$year_month <- paste0(year(rain_avg$date),"-",month(rain_avg$date))
 rain_avg$july <- as.factor(ifelse(month(rain_avg$date)==7, TRUE, FALSE))
+
+pdf("Trends in Rainfall.pdf")
 
 ggplot(rain_avg, aes(x=year_month, y=value,colour=july))+geom_boxplot() +
   ggtitle("Average Rainfall") +
@@ -173,6 +179,7 @@ ggplot(rain_avg, aes(x=year_month, y=value,colour=july))+geom_boxplot() +
   ylab("Rainfall")+
   theme_economist()  +
   theme(legend.position="none")
+dev.off()
 
 humid_avg <- humid[( month(humid$date)> 5 & month(humid$date)<10 ),]
 humid_avg <- humid_avg[humid_avg$value > 0 ,]
@@ -180,9 +187,12 @@ humid_avg$year_month <- paste0(year(humid_avg$date),"-",month(humid_avg$date))
 humid_avg$july <- as.factor(ifelse(month(humid_avg$date)==7, TRUE, FALSE))
 
 
+pdf("Trends in Humidity.pdf")
+
 ggplot(humid_avg, aes(x=year_month, y=value,colour=july))+geom_boxplot() +
   ggtitle("Average Humidity") +
   xlab("") +
   ylab("Humidity")+
   theme_economist()  +
   theme(legend.position="none")
+dev.off()
