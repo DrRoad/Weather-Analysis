@@ -48,6 +48,7 @@ lines(ts_t_min, col="blue", add=TRUE)
 weather$date <- as.Date(paste(weather$Day,weather$month,weather$year,sep="/"), format="%d/%m/%Y")
 ## Remove averavges from each monthly table
 weather <- weather[complete.cases(weather),]
+## Rename variables with descriptive names
 weather$temp_avg_daily <- as.numeric(weather$T)
 weather$temp_max_daily <- as.numeric(weather$TM)
 weather$temp_min_daily <- as.numeric(weather$Tm)
@@ -60,12 +61,15 @@ weather <- weather[,c("date","temp_avg_daily","temp_max_daily","temp_min_daily",
 
 weather_melted <- melt(weather, id.var="date")
 
+
 ## Advanced plotting of daily data with ggplot2
 
 temp <- weather_melted[weather_melted$variable%in%c("temp_avg_daily","temp_max_daily", "temp_min_daily"),]
 humid <- weather_melted[weather_melted$variable%in%c("humid_avg_daily"),]
 rain <- weather_melted[weather_melted$variable%in%c("rain_avg_daily"),]
 
+temp$month <- month(temp$date)
+plot(gvisMotionChart(temp, idvar="variable", timevar="date", yvar="value", xvar="month"))
 
 ggplot(temp, aes(x=date, y=value, col=variable))+
   geom_point()+
@@ -102,6 +106,7 @@ library(lubridate)
 temp_avg_monthly <- ddply(weather, .(year(date), month(date) ),  summarise, MaxT = mean(temp_avg_daily))
 names(temp_avg_monthly) <- c("year", "month", "temperature")
 temp_avg_monthly$year <- as.factor(temp_avg_monthly$year)
+
 temp_avg_monthly$july <- as.factor(ifelse(temp_avg_monthly$month==7, TRUE, FALSE))
 
 ggplot(temp_avg_monthly, aes(x=month, y=temperature, col=year))+
@@ -109,6 +114,11 @@ ggplot(temp_avg_monthly, aes(x=month, y=temperature, col=year))+
   geom_smooth(se=FALSE) + 
   theme(axis.text.y = element_text(size = 6),axis.text.x = element_text(size = 6), legend.position="bottom") +
   scale_x_discrete(labels=c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+
+library(googleVis)
+myStateSettings <-'
+{"playDuration":70000}'
+plot(gvisMotionChart(temp, idvar="variable", timevar="date", yvar="value", xvar="month", options=list(state=myStateSettings)))
 
 temp_max <- temp[temp$variable=="temp_max_daily", ]
 temp_max$year_month <- paste0(year(temp_max$date),"-",month(temp_max$date))
@@ -196,3 +206,5 @@ ggplot(humid_avg, aes(x=year_month, y=value,colour=july))+geom_boxplot() +
   theme_economist()  +
   theme(legend.position="none")
 dev.off()
+
+
